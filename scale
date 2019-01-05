@@ -1,0 +1,42 @@
+#!/usr/bin/env ruby
+require 'pry'
+
+class Rational
+  def human_readable
+    return numerator if (denominator == 1)
+    if numerator > denominator
+      whole_number = (numerator / denominator).floor
+      remainder = numerator % denominator
+      return whole_number if remainder == 0
+      return "#{whole_number}(#{remainder}/#{denominator})"
+    end
+    return self
+  end
+end
+
+class Application
+  def initialize(fname)
+    @recipe = {}
+    @max_width = 0
+    File.open(fname).readlines.each do |line|
+      line.strip!
+      first_character = line.split('').first
+      next if (first_character == '#' or first_character == nil)
+      amount = line.split[0]
+      unit = line.split[1]
+      ingredient = line.split[2..-1].join ' '
+      @max_width = ingredient.length if (ingredient.length > @max_width)
+      @recipe[ingredient] = {
+        amount: Rational(amount),
+        unit: unit
+      }
+    end
+  end
+  def main(scale_amount)
+    @recipe.each do |ingredient, data|
+      puts "#{ingredient.rjust(@max_width, ' ')}: #{(data[:amount]*scale_amount).human_readable} #{data[:unit]}"
+    end
+  end
+end
+
+Application.new(ARGV[0]).main(Rational(ARGV[1]))
